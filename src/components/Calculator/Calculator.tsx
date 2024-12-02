@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { buttons } from "../../defaultValues/buttons";
+import { buttons } from "../../defaultValues/defaultValues";
 import { RootState } from "../../store/store";
 import {
   calculateResult,
@@ -11,7 +11,6 @@ import { addToHistory } from "../../store/Slices/HistorySlice/historySlice";
 import styles from "./Calculator.module.css";
 
 const Calculator: React.FC = () => {
-
   const dispatch = useAppDispatch();
   const input = useAppSelector((state: RootState) => state.calculator.input);
   const result = useAppSelector((state: RootState) => state.calculator.result);
@@ -20,7 +19,7 @@ const Calculator: React.FC = () => {
     if (result) {
       dispatch(addToHistory({ input, result }));
     }
-  }, [result]);
+  }, [result, dispatch]);
 
   const handleClick = (value: string): void => {
     if (value === "=") {

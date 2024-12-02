@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface IHistorySlice {
+  id: string;
   date: string;
   time: string;
   input: string;
@@ -20,6 +21,7 @@ export const historySlice = createSlice({
   reducers: {
     addToHistory: (state, action: PayloadAction<IPayload>) => {
       state.push({
+        id: Date.now() + "",
         date: new Date().toISOString().split("T")[0],
         time: new Date().toISOString().split("T")[1].split(".")[0],
         input: action.payload.input,

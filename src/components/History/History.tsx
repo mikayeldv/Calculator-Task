@@ -8,8 +8,8 @@ const History = () => {
       <div className={styles.title}>История операций</div>
       <hr />
       <div className={styles.historyContainer}>
-        {history.map((eachOperation, idx) => (
-          <div key={idx} className={styles.historyRow}>
+        {history.map((eachOperation) => (
+          <div key={eachOperation.id} className={styles.historyRow}>
             {eachOperation.date} {eachOperation.time} {eachOperation.input} ={" "}
             {eachOperation.result}
             <hr />

@@ -11,16 +11,49 @@ const initialState: ICalculatorState = {
 };
 
 const evaluateExpression = (expr: string): number => {
+  if (!expr.trim()) {
+    throw new Error("Input cannot be empty");
+  }
+
+  expr = expr.replace(/\b0+(?=\d)/g, "");
+
+  if (/^0+$/.test(expr.trim())) {
+    return 0;
+  }
+
   const operators = ["+", "-", "*", "/"];
-  const stack: (number | string)[] = [];
+  const stack: string[] = [];
   let num = "";
+  let prevChar = "";
+
+  const validChars = /^[0-9+\-*/().\s]+$/;
+  if (!validChars.test(expr)) {
+    throw new Error("Invalid character in expression");
+  }
+
   for (let i = 0; i < expr.length; i++) {
     const char = expr[i];
+
+    if (char === "." && num.includes(".")) {
+      throw new Error("Invalid number format");
+    }
+
+    if (operators.includes(char) && operators.includes(prevChar)) {
+      throw new Error("Operators can't be consecutive");
+    }
+
+    if (
+      (i === 0 && operators.includes(char)) ||
+      (i === expr.length - 1 && operators.includes(char))
+    ) {
+      throw new Error("Expression cannot start or end with an operator");
+    }
+
     if (!isNaN(Number(char)) || char === ".") {
       num += char;
     } else if (operators.includes(char)) {
       if (num) {
-        stack.push(parseFloat(num));
+        stack.push(num);
         num = "";
       }
       while (
@@ -35,18 +68,18 @@ const evaluateExpression = (expr: string): number => {
         left &&
           right &&
           operator &&
-          stack.push(operate(+left, +right, operator + ""));
+          stack.push(operate(+left, +right, operator));
       }
-      if (char === "-" && (i === 0 || operators.includes(expr[i - 1]))) {
-        num = "-";
-      } else {
-        stack.push(char);
-      }
+      stack.push(char);
     }
+
+    prevChar = char;
   }
+
   if (num) {
-    stack.push(parseFloat(num));
+    stack.push(num);
   }
+
   while (stack.length > 1) {
     const right = stack.pop();
     const operator = stack.pop();
@@ -56,7 +89,14 @@ const evaluateExpression = (expr: string): number => {
       operator &&
       stack.push(operate(+left, +right, operator + ""));
   }
-  return +stack[0];
+
+  const result = +stack[0];
+
+  if (expr.includes("/0")) {
+    throw new Error("Division by zero");
+  }
+
+  return result;
 };
 
 const getOperatorPriority = (operator: string): number => {
@@ -72,16 +112,16 @@ const getOperatorPriority = (operator: string): number => {
   }
 };
 
-const operate = (left: number, right: number, operator: string): number => {
+const operate = (left: number, right: number, operator: string): string => {
   switch (operator) {
     case "+":
-      return left + right;
+      return left + right + "";
     case "-":
-      return left - right;
+      return left - right + "";
     case "*":
-      return left * right;
+      return left * right + "";
     case "/":
-      return left / right;
+      return left / right + "";
     default:
       throw new Error("Invalid operator");
   }
@@ -101,8 +141,8 @@ export const calculatorSlice = createSlice({
     calculateResult: (state) => {
       try {
         state.result = evaluateExpression(state.input).toString();
-      } catch {
-        state.result = "Error";
+      } catch (error: any) {
+        state.result = error.message || "Error";
       }
     },
   },
